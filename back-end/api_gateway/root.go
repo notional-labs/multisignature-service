@@ -5,10 +5,15 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func InitAPI() {
+var g_db *mongo.Database
+
+func InitAPI(db *mongo.Database) {
 	router := mux.NewRouter().StrictSlash(true)
+
+	g_db = db
 
 	router.HandleFunc("/save-tx", saveTxToDB).Methods("POST")
 	router.HandleFunc("/save-sig", saveSigToDB).Methods("POST")
