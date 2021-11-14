@@ -91,6 +91,6 @@ func (txHandler *TxHandler) ConstructMultisigTx() error {
 	return nil
 }
 
-func BroadCastTx() {
+func (txHandler *TxHandler) BroadCastTx() error {
 
 }
