@@ -8,8 +8,10 @@ import (
 )
 
 type Tx struct {
-	Tx_id   string `bson:"tx_id" json:"tx_id"`
-	Tx_body string `bson:"tx_body" json:"tx_body"`
+	Tx_id          string `bson:"tx_id" json:"tx_id"`
+	Chain_id       string `bson:"chain_id" json:"chain_id"`
+	SequenceNumber string `bson:"sequence" json:"sequence"`
+	Tx_body        string `bson:"tx_body" json:"tx_body"`
 }
 
 func (tx *Tx) UpdateOne() error {
