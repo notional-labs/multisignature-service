@@ -34,13 +34,13 @@ func (tx *Tx) UpdateOne() error {
 	return err
 }
 
-func (tx *Tx) FindOne() error {
+func (tx *Tx) FindOne(tx_id string) error {
 	findOpts := options.FindOne()
 
 	res := g_db.Collection(("Tx")).FindOne(
 		g_ctx,
 		bson.M{
-			"tx_id": tx.Tx_id,
+			"tx_id": tx_id,
 		},
 		findOpts,
 	)

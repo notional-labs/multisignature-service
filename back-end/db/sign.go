@@ -36,14 +36,14 @@ func (sign *Sign) UpdateOne() error {
 	return err
 }
 
-func (sign *Sign) FindOne() error {
+func (sign *Sign) FindOne(tx_id, address string) error {
 	findOpts := options.FindOne()
 
 	res := g_db.Collection(("Sign")).FindOne(
 		g_ctx,
 		bson.M{
-			"tx_id":   sign.Tx_id,
-			"address": sign.Address,
+			"tx_id":   tx_id,
+			"address": address,
 		},
 		findOpts,
 	)
@@ -53,4 +53,43 @@ func (sign *Sign) FindOne() error {
 	}
 
 	return res.Err()
+}
+
+func FindAllSign(tx_id string) []*Sign {
+	findOpts := options.Find()
+
+	cursor, err := g_db.Collection(("Sign")).Find(
+		g_ctx,
+		bson.M{
+			"tx_id": tx_id,
+		},
+		findOpts,
+	)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var signs []*Sign
+
+	for cursor.Next(g_ctx) {
+
+		// create a value into which the single document can be decoded
+		var elem Sign
+		err := cursor.Decode(&elem)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		signs = append(signs, &elem)
+	}
+
+	if err := cursor.Err(); err != nil {
+		log.Fatal(err)
+	}
+
+	// Close the cursor once finished
+	cursor.Close(g_ctx)
+
+	return signs
 }
