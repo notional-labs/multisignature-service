@@ -6,22 +6,18 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
-	"go.mongodb.org/mongo-driver/mongo"
 
 	"github.com/notional-labs/multisignature-service/db"
 )
 
-var g_db *mongo.Database
-
-func InitAPI(db *mongo.Database) {
+func InitAPI() {
 	router := mux.NewRouter().StrictSlash(true)
-
-	g_db = db
 
 	router.HandleFunc("/get-random", getRandom)
 	router.HandleFunc("/save-tx", saveTxToDB).Methods("POST")
 	router.HandleFunc("/save-sig", saveSigToDB).Methods("POST")
 
+	log.Println("Server is running on port 8000")
 	log.Fatal(http.ListenAndServe(":8000", router))
 }
 
@@ -42,6 +38,7 @@ func saveTxToDB(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&bodyJson)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
+		return
 	}
 
 	err = bodyJson.UpdateOne()
@@ -51,5 +48,22 @@ func saveTxToDB(w http.ResponseWriter, r *http.Request) {
 }
 
 func saveSigToDB(w http.ResponseWriter, r *http.Request) {
+	// checking header type to make sure json
+	if r.Header.Get("Content-Type") != "application/json" {
+		msg := "Content-Type header is not application/json"
+		http.Error(w, msg, http.StatusUnsupportedMediaType)
+		return
+	}
 
+	var bodyJson db.Sign
+	err := json.NewDecoder(r.Body).Decode(&bodyJson)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
+		return
+	}
+
+	err = bodyJson.UpdateOne()
+	if err != nil {
+		log.Fatal(err)
+	}
 }

@@ -12,14 +12,6 @@ type Tx struct {
 	Tx_body string `bson:"tx_body" json:"tx_body"`
 }
 
-func createTxCollection() {
-	collectionOpts := options.CreateCollection()
-	err := g_db.CreateCollection(g_ctx, "Tx", collectionOpts)
-	if err != nil {
-		log.Fatal(err)
-	}
-}
-
 func (tx *Tx) UpdateOne() error {
 	updateOpts := options.Update()
 	updateOpts.SetUpsert(true)
@@ -27,14 +19,16 @@ func (tx *Tx) UpdateOne() error {
 	res, err := g_db.Collection("Tx").UpdateOne(
 		g_ctx,
 		bson.M{
-			"Tx_id": tx.Tx_id,
+			"tx_id": tx.Tx_id,
 		},
-		tx,
+		bson.M{
+			"$set": tx,
+		},
 		updateOpts,
 	)
 
 	if err == nil {
-		log.Printf("%d records changed", res.ModifiedCount)
+		log.Printf("[TxCollection]:%d records added, %d records modified", res.UpsertedCount, res.ModifiedCount)
 	}
 
 	return err
@@ -46,7 +40,7 @@ func (tx *Tx) FindOne() error {
 	res := g_db.Collection(("Tx")).FindOne(
 		g_ctx,
 		bson.M{
-			"Tx_id": tx.Tx_id,
+			"tx_id": tx.Tx_id,
 		},
 		findOpts,
 	)

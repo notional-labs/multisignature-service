@@ -6,6 +6,6 @@ import (
 )
 
 func main() {
-	db := db.InitDB()
-	api_gateway.InitAPI(db)
+	db.InitDB()
+	api_gateway.InitAPI()
 }
