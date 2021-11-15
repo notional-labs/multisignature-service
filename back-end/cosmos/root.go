@@ -7,7 +7,8 @@ import (
 	"github.com/notional-labs/multisignature-service/db"
 
 	"github.com/cosmos/cosmos-sdk/client"
-	"github.com/cosmos/cosmos-sdk/crypto/types/multisig"
+	"github.com/cosmos/cosmos-sdk/codec"
+	"github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/signing"
 )
@@ -27,8 +28,12 @@ func GetTxHandler(tx_id string) *TxHandler {
 	txHandler.Tx = tx
 
 	// construct client context
+	interfaceRegistry := types.NewInterfaceRegistry()
+	marshaler := codec.NewProtoCodec(interfaceRegistry)
 	ctx := client.Context{
-		ChainID: tx.Chain_id,
+		ChainID:           tx.Chain_id,
+		InterfaceRegistry: interfaceRegistry,
+		Codec:             marshaler,
 	}
 
 	txHandler.Ctx = ctx
@@ -52,6 +57,13 @@ func (txHandler *TxHandler) ConstructMultisigTx() error {
 
 	// get signature list
 	signs := db.FindAllSign(txHandler.Tx.Tx_id)
+
+	// construct multisig
+	/*
+		for _, sign := range signs {
+			// construct PubKey list
+		}
+	*/
 
 	// signing
 	sequenceNumber, err := strconv.ParseUint(txHandler.Tx.SequenceNumber, 10, 64)
@@ -81,9 +93,9 @@ func (txHandler *TxHandler) ConstructMultisigTx() error {
 				return fmt.Errorf("couldn't verify signature for address %s", addr)
 			}
 
-			if err := multisig.AddSignatureV2(multisigSig, sig, multisigPub.GetPubKeys()); err != nil {
-				return err
-			}
+			//if err := multisig.AddSignatureV2(multisigSig, sig, multisigPub.GetPubKeys()); err != nil {
+			//	return err
+			//}
 		}
 
 	}
@@ -92,5 +104,5 @@ func (txHandler *TxHandler) ConstructMultisigTx() error {
 }
 
 func (txHandler *TxHandler) BroadCastTx() error {
-
+	return nil
 }
