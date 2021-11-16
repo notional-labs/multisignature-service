@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	cosmos.Temp()
+	cosmos.Temp1()
 	db.InitDB()
 	api_gateway.InitAPI()
 }
