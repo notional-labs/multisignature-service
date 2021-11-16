@@ -2,26 +2,120 @@ package cosmos
 
 import (
 	"log"
+	"strconv"
 
 	"github.com/cosmos/cosmos-sdk/client"
+	"github.com/cosmos/cosmos-sdk/client/flags"
+	"github.com/cosmos/cosmos-sdk/client/tx"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/codec/types"
-	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/rest"
+	auth_tx "github.com/cosmos/cosmos-sdk/x/auth/tx"
+	bank_types "github.com/cosmos/cosmos-sdk/x/bank/types"
 )
 
 func Temp() error {
 	interfaceRegistry := types.NewInterfaceRegistry()
 	marshaler := codec.NewProtoCodec(interfaceRegistry)
+	txCfg := auth_tx.NewTxConfig(marshaler, auth_tx.DefaultSignModes)
+	from_address, _ := sdk.AccAddressFromBech32("cosmos1p37nums898azmm9gc8yyxf8km97pu68p7pwgqv")
 	ctx := client.Context{
+		FromAddress:       from_address,
 		InterfaceRegistry: interfaceRegistry,
 		Codec:             marshaler,
+		TxConfig:          txCfg,
 	}
 
-	pkstr := `{"name":"multisig-0-1","type":"multi","address":"cosmos1z2mf7s005tqg3z7je7htkq5wguuruncjj89c5v","pubkey":"cosmospub1ytql0csgqgfzd666axrjzq6geytc3shllx83022aljarqe2zjnx405hszvs5e4quwtg2mwufmufzd666axrjzqle0w906f4ccprxnqt5mfpy89l62vzeqaw9lfs0s7z4qtcggpllpcpwylf6"}`
+	toAddr, err := sdk.AccAddressFromBech32("cosmos1p37nums898azmm9gc8yyxf8km97pu68p7pwgqv")
+	if err != nil {
+		return err
+	}
 
-	var pk cryptotypes.PubKey
-	err := ctx.Codec.UnmarshalInterfaceJSON([]byte(pkstr), &pk)
-	log.Println(pk.String())
+	coins, err := sdk.ParseCoinsNormalized("2atom")
+	if err != nil {
+		return err
+	}
 
-	return err
+	msg := bank_types.NewMsgSend(ctx.GetFromAddress(), toAddr, coins)
+
+	log.Println(msg.String())
+
+	return nil
+}
+
+func Temp1() error {
+	interfaceRegistry := types.NewInterfaceRegistry()
+	marshaler := codec.NewProtoCodec(interfaceRegistry)
+	txCfg := auth_tx.NewTxConfig(marshaler, auth_tx.DefaultSignModes)
+	amino := codec.NewLegacyAmino()
+	from_address, _ := sdk.AccAddressFromBech32("cosmos1p37nums898azmm9gc8yyxf8km97pu68p7pwgqv")
+	ctx := client.Context{
+		FromAddress:       from_address,
+		InterfaceRegistry: interfaceRegistry,
+		Codec:             marshaler,
+		TxConfig:          txCfg,
+		LegacyAmino:       amino,
+	}
+
+	coins, err := sdk.ParseCoinsNormalized("2atom")
+	if err != nil {
+		return err
+	}
+
+	br := rest.NewBaseReq(
+		"cosmos1p37nums898azmm9gc8yyxf8km97pu68p7pwgqv",
+		"",
+		"cosmos-4",
+		"5",
+		"5",
+		uint64(34),
+		uint64(23),
+		coins,
+		nil,
+		false,
+	)
+
+	toAddr, err := sdk.AccAddressFromBech32("cosmos1p37nums898azmm9gc8yyxf8km97pu68p7pwgqv")
+	if err != nil {
+		return err
+	}
+
+	msg := bank_types.NewMsgSend(ctx.GetFromAddress(), toAddr, coins)
+
+	gasAdj, ok := ParseFloat64O(br.GasAdjustment, flags.DefaultGasAdjustment)
+	if !ok {
+		return nil
+	}
+
+	gasSetting, _ := flags.ParseGasSetting(br.Gas)
+
+	txf := tx.Factory{}.
+		WithFees("2atom").
+		WithAccountNumber(br.AccountNumber).
+		WithSequence(br.Sequence).
+		WithGas(gasSetting.Gas).
+		WithGasAdjustment(gasAdj).
+		WithMemo(br.Memo).
+		WithChainID(br.ChainID).
+		WithSimulateAndExecute(br.Simulate).
+		WithTxConfig(ctx.TxConfig).
+		WithTimeoutHeight(br.TimeoutHeight)
+
+	tx.GenerateTx(ctx, txf, msg)
+
+	return nil
+}
+
+func ParseFloat64O(s string, defaultIfEmpty float64) (n float64, ok bool) {
+	if len(s) == 0 {
+		return defaultIfEmpty, true
+	}
+
+	n, err := strconv.ParseFloat(s, 64)
+	if err != nil {
+		return n, false
+	}
+
+	return n, true
 }
