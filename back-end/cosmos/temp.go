@@ -22,6 +22,5 @@ func Temp() error {
 	var pk cryptotypes.PubKey
 	err := ctx.Codec.UnmarshalInterfaceJSON([]byte(pkstr), &pk)
 	log.Println(pk.String())
-
 	return err
 }

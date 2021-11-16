@@ -13,7 +13,7 @@ type KeyRingHandler struct {
 	Ctx client.Context
 }
 
-//keyringBackend is : test or os or local
+// GetKeyringHandler keyringBackend is : test | os | local
 func GetKeyringHandler(chainID string, keyringBackend string) (*KeyRingHandler, error) {
 	KeyHandler := KeyRingHandler{}
 
