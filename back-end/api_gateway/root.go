@@ -13,15 +13,21 @@ import (
 func InitAPI() {
 	router := mux.NewRouter().StrictSlash(true)
 
-	router.HandleFunc("/get-random", getRandom)
-	router.HandleFunc("/save-tx", saveTxToDB).Methods("POST")
-	router.HandleFunc("/save-sig", saveSigToDB).Methods("POST")
+	router.HandleFunc("/multisig/add", addMultisigPubkeyToKeyRing).Methods("POST")
+	router.HandleFunc("/multisig/generate", generateMultisigPubkeyToKeyRing).Methods("POST")
+	
+	router.HandleFunc("/save/tx", saveTxToDB).Methods("POST")
+	router.HandleFunc("/save/sig", saveSigToDB).Methods("POST")
 
 	log.Println("Server is running on port 8000")
 	log.Fatal(http.ListenAndServe(":8000", router))
 }
 
-func getRandom(w http.ResponseWriter, r *http.Request) {
+func addMultisigPubkeyToKeyRing(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func generateMultisigPubkeyToKeyRing(w http.ResponseWriter, r *http.Request) {
 
 }
 
